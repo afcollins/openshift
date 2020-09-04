@@ -1,4 +1,3 @@
-OCADDRESS: "https://ocp.dc1.example.com:443"
 OCUSER: "system:admin"
 BACKUPDIR: "/backupOCP/{{ansible_date_time.date}}/objects/{{ ansible_hostname }}"
 objects:

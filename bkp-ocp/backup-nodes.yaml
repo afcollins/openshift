@@ -1,5 +1,5 @@
 ---
-- hosts: masters
+- hosts: nodes
   vars_files:
     - roles/backup-nodes/vars/vars.yaml
   roles:
