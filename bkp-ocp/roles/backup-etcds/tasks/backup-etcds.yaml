@@ -1,8 +1,22 @@
-- name: Backup ETCD Servers - Create local backup etcd structure
+- name: Backup etcd Servers - Create local backup structure
   file:
-    path: "{{ BACKUPDIR }}"
+    path: "{{ item }}"
     state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+  loop:
+    - "{{ CONTROLLER_BACKUP }}"
   delegate_to: localhost
+  vars:
+    ansible_connection: ssh
+    ansible_user: "{{ ansible_ssh_user }}"
+
+- name: Backup etcd Servers - Create remote backup structure
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BACKUPDIR }}"
 
 - name: Get the Endpoints
   shell: grep https "{{ ETCD_POD_MANIFEST }}" | cut -d '/' -f3
@@ -10,9 +24,6 @@
 
 - debug:
     var: ETCD_EP
-
-- name: Get inside OCP cluster to get access of ETCDs PODS
-  shell: oc login "{{ OCADDRESS }}" -u "{{ OCUSER }}" --insecure-skip-tls-verify
 
 - name: Check OC login (whoami)
   shell: oc whoami
@@ -27,28 +38,19 @@
 - debug:
     var: ETCD_POD
 
-- name: Go to Kube-System Project
-  shell: oc project "{{ OCPROJECT }}"
-
-- debug:
-    msg: "{{ ETCD_POD }}"
-
 - name: Execute and save the Snapshot
-  shell: "oc exec {{ item }} -c etcd -- /bin/bash -c 'ETCDCTL_API=3 etcdctl --cert {{ CERT }} --key {{ KEY }} --cacert {{ CACERT }} --endpoints {{ ETCD_EP.stdout }} snapshot save /var/lib/etcd/snapshot.db'"
+  shell: "oc -n kube-system exec {{ item }} -c etcd -- /bin/bash -c 'ETCDCTL_API=3 etcdctl --cert {{ CERT }} --key {{ KEY }} --cacert {{ CACERT }} --endpoints {{ ETCD_EP.stdout }} snapshot save /var/lib/etcd/snapshot.db'"
   loop: "{{ ETCD_POD.stdout_lines }}"
   when: "ansible_hostname in item"
 
-- name: Backup ETCD Directory to Host
-  synchronize:
-    src: /etc/etcd
-    dest: "{{ BACKUPDIR }}"
-    rsync_path: "/usr/bin/rsync"
-    mode: pull
+- name: Backup etcd Servers - Copy Origin Files
+  archive:
+    path:
+    - /var/lib/etcd/snapshot.db
+    - /etc/etcd
+    dest: "{{ BACKUPDIR }}/etcd.tgz"
 
-- name: Copy Snapshot to Backup Host
-  synchronize:
-    src: /var/lib/etcd/snapshot.db
-    dest: "{{ BACKUPDIR }}"
-    rsync_path: "/usr/bin/rsync"
-    mode: pull
-
+- name: Fetch etcd archive
+  fetch:
+    src: "{{ BACKUPDIR }}/etcd.tgz"
+    dest: "{{ CONTROLLER_BACKUP }}/"

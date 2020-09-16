@@ -1,19 +1,22 @@
-- name: Backup Project Objects - Check Backup Directory Exists
-
-  stat:
-    path: "{{ BACKUPDIR }}"
-  register: backup_directory
-
-- name: Backup Project Objects - Create Backup Master Structure
+- name: Backup Project Objects - Create local backup structure
   file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+  loop:
+    - "{{ CONTROLLER_BACKUP }}"
   delegate_to: localhost
+  vars:
+    ansible_connection: ssh
+    ansible_user: "{{ ansible_ssh_user }}"
+
+- name: Backup Project Objects - Create remote backup structure
+  file:
+    path: "{{ item }}"
+    state: directory
   loop:
     - "{{ BACKUPDIR }}"
-
-- name: Get inside OCP cluster to get access of master PODS
-  shell: oc login "{{ OCADDRESS }}" -u "{{ OCUSER }}" --insecure-skip-tls-verify
 
 - name: Check OC login (whoami)
   shell: oc whoami
@@ -35,3 +38,14 @@
   with_nested:
     - "{{ projects }}"
     - "{{ objects }}"
+
+- name: Backup Project Objects - Archive objects
+  archive:
+    path:
+    - "{{ BACKUPDIR }}/*.yaml"
+    dest: "{{ BACKUPDIR }}/objects.tgz"
+
+- name: Fetch objects archive
+  fetch:
+    src: "{{ BACKUPDIR }}/objects.tgz"
+    dest: "{{ CONTROLLER_BACKUP }}"

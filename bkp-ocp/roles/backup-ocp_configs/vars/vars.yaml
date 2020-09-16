@@ -1,3 +1,0 @@
-BACKUPDIR: "/backupOCP/{{ansible_date_time.date}}/ocp_configs/{{ ansible_hostname }}"
-OCP_EXTRA_FILES: 
-        - /root/bkp-ocp/

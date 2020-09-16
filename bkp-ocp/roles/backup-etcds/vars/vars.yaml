@@ -1,4 +1,4 @@
-BACKUPDIR: "/backupOCP/{{ansible_date_time.date}}/etcds/{{ ansible_hostname }}"
+BACKUPDIR: "backupOCP/{{ansible_date_time.date}}/etcds"
 ETCD_POD_MANIFEST: /etc/origin/node/pods/etcd.yaml
 
 ## Authentication variables for accessing OpenShift cluster or

@@ -1,0 +1,5 @@
+---
+- import_playbook: backup-controlplane.yaml
+- import_playbook: backup-etcds.yaml
+- import_playbook: backup-nodes.yaml
+- import_playbook: backup-objects.yaml

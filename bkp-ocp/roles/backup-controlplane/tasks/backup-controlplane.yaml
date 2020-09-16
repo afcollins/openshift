@@ -1,0 +1,46 @@
+- name: Backup Control Plane Servers - Create local backup structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+  loop:
+    - "{{ CONTROLLER_BACKUP }}"
+  delegate_to: localhost
+  vars:
+    ansible_connection: ssh
+    ansible_user: "{{ ansible_ssh_user }}"
+
+- name: Backup Control Plane Servers - Create remote backup structure
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BACKUPDIR }}"
+
+- name: Backup Control Plane Servers - Generate Package List
+  shell: "rpm -qa | sort"
+  register: packages
+
+- name: Backup Control Plane Servers - Save listed packages to packages.txt
+  copy:
+    content: "{{ packages.stdout_lines }}"
+    dest: "{{ BACKUPDIR }}/packages.txt"
+    remote_src: true
+
+- name: Backup Control Plane Servers - Copy Origin Files
+  archive:
+    path:
+    - /etc/origin/
+    - /etc/sysconfig/
+    - /etc/cni/
+    - /etc/dnsmasq.d/
+    - /etc/dnsmasq.conf
+    - /etc/ca-trust/
+    - "{{ BACKUPDIR }}/packages.txt"
+    dest: "{{ BACKUPDIR }}/controlplane.tgz"
+
+- name: Fetch controlplane archive
+  fetch:
+    src: "{{ BACKUPDIR }}/controlplane.tgz"
+    dest: "{{ CONTROLLER_BACKUP }}/"

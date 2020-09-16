@@ -1,5 +1,5 @@
 OCUSER: "system:admin"
-BACKUPDIR: "/backupOCP/{{ansible_date_time.date}}/objects/{{ ansible_hostname }}"
+BACKUPDIR: "backupOCP/{{ansible_date_time.date}}/objects"
 objects:
   - rolebindings
   - serviceaccounts

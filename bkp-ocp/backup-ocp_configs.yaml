@@ -1,6 +1,0 @@
----
-- hosts: localhost
-  vars_files:
-    - roles/backup-ocp_configs/vars/vars.yaml
-  roles:
-  - { role: backup-ocp_configs, become: yes }

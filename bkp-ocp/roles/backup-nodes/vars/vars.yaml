@@ -1,1 +1,1 @@
-BACKUPDIR: "/backupOCP/{{ansible_date_time.date}}/masters-nodes/{{ ansible_hostname }}"
+BACKUPDIR: "backupOCP/{{ansible_date_time.date}}/nodes"
