@@ -4,7 +4,8 @@
 
 `backup_all.sh` demonstrates my use of aliasing for ansible commands to speed up operation from both a dedicated and shared controller node.
 
-I run ansible-playbook `backup_all.yaml`.
+As a regular user, I run ansible-playbook `backup_all.yaml -eCONTROLLER_BACKUP=/home/u111433/backupOCP`.
+As ocpadmn, running `backup_all.yaml` should be sufficient.
 
 ## Backup format
 Successful `backup_all.yaml` will result in following structure.
